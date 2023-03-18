@@ -1,0 +1,33 @@
+{
+  "name": "anki-human-validator",
+  "version": "1.0.0",
+  "description": "A human validator for newly added anki cards",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Reesy/anki-human-validator.git"
+  },
+  "keywords": [
+    "anki",
+    "validation",
+    "language-learning",
+    "SRS"
+  ],
+  "author": "James Rees",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Reesy/anki-human-validator/issues"
+  },
+  "homepage": "https://github.com/Reesy/anki-human-validator#readme",
+  "dependencies": {
+    "anki-apkg-export": "^4.0.3",
+    "anki-to-json": "^1.1.0",
+    "dotenv": "^16.0.3",
+    "sqlite3": "^5.1.6",
+    "unzipper": "^0.10.11",
+    "yauzl": "^2.10.0"
+  }
+}
