@@ -15,22 +15,61 @@ const server = http.createServer((req, res) => {
       <title>Flashcards</title>
     </head>
     <body>
-      <h1>Flashcards</h1>
-      <ul>
-  `;
+      <div id="flashcard-container">
+        <p id="japanese"></p>
+        <p id="english"></p>
+        <div id="media-container"></div>
+        <button onclick="thumbsUp()">👍 <span id="thumbs-up-count">0</span></button>
+        <button onclick="thumbsDown()">👎 <span id="thumbs-down-count">0</span></button>
+        <button onclick="previousCard()">Go Back</button>
+        <button onclick="nextCard()">Next</button>
+      </div>
+      <script>
+        let currentCard = 0;
+        let thumbsUpCount = 0;
+        let thumbsDownCount = 0;
 
-  flashCards.forEach(card => {
-    html += `
-      <li>
-        <span>${card.jpText}</span> - <span>${card.enText}</span>
-        <button>👍</button>
-        <button>👎</button>
-      </li>
-    `;
-  });
+        function showCard(index) {
+          const cards = ${JSON.stringify(flashCards)};
+          const card = cards[index];
 
-  html += `
-      </ul>
+          if (!card) return;
+
+          document.getElementById('japanese').textContent = card.japanese;
+          document.getElementById('english').textContent = card.english;
+
+          const mediaContainer = document.getElementById('media-container');
+          mediaContainer.innerHTML = '';
+
+          // Add media elements here if necessary
+        }
+
+        function nextCard() {
+          currentCard++;
+          showCard(currentCard);
+        }
+
+        function previousCard() {
+          if (currentCard > 0) {
+            currentCard--;
+            showCard(currentCard);
+          }
+        }
+
+        function thumbsUp() {
+          thumbsUpCount++;
+          document.getElementById('thumbs-up-count').textContent = thumbsUpCount;
+        }
+
+        function thumbsDown() {
+          thumbsDownCount++;
+          document.getElementById('thumbs-down-count').textContent = thumbsDownCount;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          showCard(currentCard);
+        });
+      </script>
     </body>
     </html>
   `;
