@@ -1,9 +1,32 @@
 const http = require('http');
 const fs = require('fs');
+const url = require('url');
 
 const flashCards = JSON.parse(fs.readFileSync('output.json', 'utf-8'));
 
 const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true);
+  if (parsedUrl.pathname === '/api/update_ratings') {
+    let body = '';
+
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', () => {
+      const { cardIndex, thumbsUp, thumbsDown } = JSON.parse(body);
+      flashCards[cardIndex].thumbsUp = thumbsUp;
+      flashCards[cardIndex].thumbsDown = thumbsDown;
+
+      fs.writeFileSync('output.json', JSON.stringify(flashCards, null, 2), 'utf-8');
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'success' }));
+    });
+
+    return;
+  }
+
   res.setHeader('Content-Type', 'text/html');
 
   let html = `
@@ -26,8 +49,6 @@ const server = http.createServer((req, res) => {
       </div>
       <script>
         let currentCard = 0;
-        let thumbsUpCount = 0;
-        let thumbsDownCount = 0;
 
         function showCard(index) {
           const cards = ${JSON.stringify(flashCards)};
@@ -37,6 +58,8 @@ const server = http.createServer((req, res) => {
 
           document.getElementById('japanese').textContent = card.japanese;
           document.getElementById('english').textContent = card.english;
+          document.getElementById('thumbs-up-count').textContent = card.thumbsUp || 0;
+          document.getElementById('thumbs-down-count').textContent = card.thumbsDown || 0;
 
           const mediaContainer = document.getElementById('media-container');
           mediaContainer.innerHTML = '';
@@ -56,29 +79,58 @@ const server = http.createServer((req, res) => {
           }
         }
 
-        function thumbsUp() {
-          thumbsUpCount++;
-          document.getElementById('thumbs-up-count').textContent = thumbsUpCount;
-        }
+        async function updateRatings() {
+          const thumbsUp = parseInt(document.getElementById('thumbs-up-count').textContent, 10);
+          const thumbsDown = parseInt(document.getElementById('thumbs-down-count').textContent, 10);
 
-        function thumbsDown() {
-          thumbsDownCount++;
-          document.getElementById('thumbs-down-count').textContent = thumbsDownCount;
-        }
+          const response = await fetch('/api/update_ratings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cardIndex: currentCard, thumbsUp, thumbsDown })
+          });
 
-        document.addEventListener('DOMContentLoaded', () => {
-          showCard(currentCard);
-        });
-      </script>
-    </body>
-    </html>
-  `;
+          if (response.ok) {
+            const data = await response.json();
+           
+            if (data.status === 'success') {
+                console.log('Ratings updated successfully');
+              } else {
+                console.error('Error updating ratings');
+              }
+            } else {
+              console.error('Error updating ratings');
+            }
+          }
+      
+          function thumbsUp() {
+            const countElement = document.getElementById('thumbs-up-count');
+            const count = parseInt(countElement.textContent, 10) + 1;
+            countElement.textContent = count;
+            updateRatings();
+          }
+      
+          function thumbsDown() {
+            const countElement = document.getElementById('thumbs-down-count');
+            const count = parseInt(countElement.textContent, 10) + 1;
+            countElement.textContent = count;
+            updateRatings();
+          }
+      
+          document.addEventListener('DOMContentLoaded', () => {
+            showCard(currentCard);
+          });
+        </script>
+      </body>
+      </html>
+      `;
 
-  res.end(html);
+res.end(html);
 });
 
 const PORT = 3000;
 
 server.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+console.log(`Server is running at http://localhost:${PORT}`);
 });
