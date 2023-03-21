@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anki Card Voting</title>
+</head>
+<body>
+    <h1>Anki Card Voting</h1>
+    <div id="cards"></div>
+    <script>
+        async function fetchCards() {
+            const response = await fetch('/cards');
+            const cards = await response.json();
+            const cardsContainer = document.getElementById('cards');
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.innerHTML = `
+                    <h2>${card.front}</h2>
+                    <h3>${card.back}</h3>
+                    <p>Votes: ${card.votes}</p>
+                    <button onclick="vote(${index}, 'up')">Vote Up</button>
+                    <button onclick="vote(${index}, 'down')">Vote Down</button>
+                `;
+                cardsContainer.appendChild(cardElement);
+            });
+        }
+
+        async function vote(index, voteType) {
+            await fetch(`/vote/${index}/${voteType}`, { method: 'POST' });
+            location.reload();
+        }
+
+        fetchCards();
+    </script>
+</body>
+</html>
